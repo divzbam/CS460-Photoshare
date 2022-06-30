@@ -1,0 +1,194 @@
+<!-- PROFILE PAGE: view user info and their albums (may/may not be logged in user's profile) -->
+<head>
+    <style>
+        body {font-family: Arial, Helvetica, sans-serif;}
+        
+        /* The Modal (background) */
+        .modal {
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 10; /* Sit on top */
+          padding-top: 100px; /* Location of the box */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0,0,0); /* Fallback color */
+          background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        
+        /* Modal Content */
+        .modal-content {
+          background-color: #fefefe;
+          margin: auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80%;
+        }
+        
+        /* The Close Button */
+        .close {
+          color: #aaaaaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+        }
+        
+        .close:hover,
+        .close:focus {
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
+        }
+        </style>
+
+    <!-- {% if message %}
+    <h4>{{message}}!</h4>
+    {% endif %} -->
+    <base href="http://localhost:5000/">
+    <title>Photoshare</title>
+    {% if name %}
+    <h3>Hello, {{ name }}!</h3>
+    {% endif %}
+</head>
+
+<body>
+    {% if user %}
+    <h2>{{user[3]}}'s Profile</h2>
+    <p>Name: {{user[1]}} {{user[2]}}</p>
+    <p>Gender: {{user[6]}}</p>
+    <p>Birthday: {{user[4]}}</p>
+    <p>Hometown: {{user[5]}}</p>
+
+    {% endif %}
+    <!-- VIEW USER'S FRIENDS MODAL -->
+    <button id="btnModal" type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
+        View Friends
+    </button>
+
+    <!-- Modal for Photo Upload -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+
+            <div class="title">
+                <h3>{{user[3]}}'s Friends</h3>
+                {% if anonymous %}
+                <p>You are not logged in. Please <a href='login'>log in</a> to add friends.</p>
+                {% endif %}
+            </div>
+            <!-- list of user's friends -->
+            {% if myFriends %}
+                <div class="friendsList">
+                    <ul>
+                        <!-- if no friends (only myFriends), user is viewing own profile -->
+                        {% if not friends %}
+                            {% for friend in myFriends %}
+                                <li><a href='/profile/{{friend[0]}}'>{{friend[1]}} {{friend[2]}}</a>
+                                {% if not anonymous %}
+                                <form action='/remove_friend/{{friend[0]}}' method='POST'>
+                                    <input type='submit' value='Remove Friend'></input>
+                                </form></li>
+                                {% endif %}
+                            {% endfor %}
+                        <!-- if friends and myFriends, user is viewing another user's profile -->
+                        {% else %}
+                            {% for friend in friends %}
+                                <li><a href='/profile/{{friend[0]}}'>{{friend[1]}} {{friend[2]}}</a></li>
+                                {% if friend not in myFriends %}
+                                    {% if not anonymous %}
+                                        {% if friend[0] != myId %}
+                                        <!-- btn to add friend if not in myFriends AND friend is not logged in user -->
+                                            <form action='/add_friend/{{friend[0]}}' method='POST'>
+                                                <input type='submit' value='Add Friend'></input>
+                                            </form>
+                                        {% endif %}
+                                        <form action='/remove_friend/{{friend[0]}}' method='POST'>
+                                            <input type='submit' value='Remove Friend'></input>
+                                        </form>
+                                    {% endif %}
+                                {% else %}
+                                    {% if not anonymous %}
+                                    <!-- btn to remove friend if exists in myFriends -->
+                                    <form action='/remove_friend/{{friend[0]}}' method='POST'>
+                                        <input type='submit' value='Remove Friend'></input>
+                                    </form>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                </div>
+            {% else %}
+            <a href='explore/users'>No friends yet! Search for users here -></a>
+            {% endif %}
+        </div>
+    </div>
+
+    <h2>Albums:</h2>
+    <a href="/new_album">[+] Create New Album</a>
+    {% if albums %}
+    <ul>
+    {% for album in albums %}
+        <li>
+            <!-- btn to delete album -->
+            {% if owner == True %}
+            <form action='/delete_album/{{album[0]}}' method='POST'>
+                <a href='/album/{{album[0]}}'>{{ album[1] }} ({{ album[3]}} photos)</a>
+                <input type='submit' value='Delete'></input>
+            </form>
+            <p>Created {{album[2]}}</p>
+
+            {% else %}
+            <a href='/album/{{album[0]}}'>{{ album[1] }} ({{ album[3]}} photos)</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    <br/>
+    <h3>Main Menu:</h3>
+    <ul>
+        <li><a href='/'>Home</a></li>
+        <li><a href='/explore'>Top Users and Tags</a></li>
+        <li><a href='/browse'>Browse Photos</a></li>
+        {% if anonymous %}
+            <li><a href='/login'>Login</a></li>
+            <li><a href='/register'>or create an account</a></li>
+        {% else %}
+            <li><a href='/profile'>My Profile</a></li>
+            <li><a href='/logout'>Logout</a></li>
+        {% endif %}
+    </ul>
+
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+        
+        // Get the button that opens the modal
+        var btn = document.getElementById("btnModal");
+        
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        
+        // When the user clicks the button, open the modal 
+        btn.onclick = function() {
+          modal.style.display = "block";
+        }
+        
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+          modal.style.display = "none";
+        }
+        
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        }
+        </script>
+</body>

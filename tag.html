@@ -1,0 +1,77 @@
+<!-- CLICK ON A TAG TO SEE ALL PHOTOS TAGGED WITH THAT TAG -->
+<head>
+    <style>
+        body {font-family: Arial, Helvetica, sans-serif;}
+
+        .img-responsive {
+            max-width: 100%;
+            display: flex;
+            height: auto;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-content: stretch;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .photoGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+    </style>
+
+    <base href="http://localhost:5000/">
+    <title>Photoshare</title>
+    {% if name %}
+        <h3>Hello, {{ name }}!</h3>
+    {% endif %}
+</head>
+
+<body>
+    <h2>Browse Tagged Photos</h2>
+    {% if tag %}
+    <h2>Tag: {{tag}}</h2>
+    {% endif %}
+    {% if tags %}
+    <h2>Tags:</h2>
+    <ul>
+        {% for tag in tags %}
+            <li><a href='/tag/{{tag}}'>{{tag}}</a></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if photos %}
+        <div class="grid-container photoGrid">
+        {% for photo in photos %}
+            <div class="grid-item">
+                <a href="/photo/{{photo.pid}}">
+                <img src='data:image/jpg;base64, {{ photo.data }}' class="img-responsive"/>
+                </a>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        {% if tag %}
+        <p>No photos tagged with {{tag}}.</p>
+        {% elif tags %}
+        <p>No photos tagged with those tags.</p>
+        {% endif %}
+    {% endif %}
+
+    <br/>
+    <h3>Main Menu:</h3>
+    <ul>
+        <li><a href='/'>Home</a></li>
+        <li><a href='/browse'>Browse Photos</a></li>
+        <li><a href='/explore'>Top Users and Tags</a></li>
+        {% if anonymous %}
+            <li><a href='/login'>Login</a></li>
+            <li><a href='/register'>or create an account</a></li>
+        {% else %}
+            <li><a href='/profile'>My Profile</a></li>
+            <li><a href='/logout'>Logout</a></li>
+        {% endif %}
+    </ul>
+</body>
